@@ -1,0 +1,665 @@
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>С Днём Победы!</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Cinzel', serif;
+            background: linear-gradient(180deg, #000022 0%, #1a1a3e 100%);
+            color: #fff;
+            text-align: center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Звезды на фоне */
+        .stars {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .star {
+            position: absolute;
+            background: #fff;
+            border-radius: 50%;
+            animation: twinkle 4s infinite;
+            opacity: 0.8;
+        }
+
+        .star:nth-child(odd) {
+            width: 2px;
+            height: 2px;
+        }
+
+        .star:nth-child(even) {
+            width: 3px;
+            height: 3px;
+            animation-duration: 6s;
+        }
+
+        .container {
+            max-width: 800px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 30px;
+            padding: 60px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6), 0 0 40px rgba(255, 215, 0, 0.3);
+            -webkit-backdrop-filter: blur(20px);
+            backdrop-filter: blur(20px);
+            margin: 25px;
+            position: relative;
+            z-index: 10;
+            border: 4px solid transparent;
+            border-image: linear-gradient(45deg, #ffd700, #ff4500, #800080) 1;
+            animation: containerDissolve 2.5s ease-in-out, containerPulse 6s ease-in-out infinite;
+            will-change: transform, opacity;
+        }
+
+        @supports not (backdrop-filter: blur(20px)) {
+            .container {
+                background: rgba(255, 255, 255, 0.15);
+            }
+        }
+
+        h1 {
+            font-family: 'Great Vibes', cursive;
+            font-size: 4rem;
+            color: #ffd700;
+            margin-bottom: 35px;
+            filter: drop-shadow(0 0 15px #ffd700) brightness(1.2);
+            animation: titleSparkle 4s ease-in-out infinite;
+            clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+        }
+
+        p {
+            font-size: 1.5rem;
+            line-height: 2.2;
+            color: #e0e0e0;
+            margin-bottom: 35px;
+            text-shadow: 0 3px 6px rgba(0, 0, 0, 0.4);
+        }
+
+        .flower img {
+            max-width: 100%;
+            border-radius: 25px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
+            transition: transform 0.5s ease, box-shadow 0.5s ease;
+            cursor: pointer;
+            will-change: transform;
+        }
+
+        .flower img:hover {
+            transform: scale(1.12) rotate(4deg);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.6);
+        }
+
+        .share-button {
+            display: inline-block;
+            padding: 18px 35px;
+            background: linear-gradient(45deg, #ff4500, #ffd700, #ff1493);
+            color: #fff;
+            font-weight: bold;
+            text-decoration: none;
+            border-radius: 35px;
+            margin-top: 30px;
+            transition: transform 0.4s ease, box-shadow 0.4s ease, background 0.4s ease;
+            box-shadow: 0 6px 20px rgba(255, 69, 0, 0.6);
+            animation: buttonWave 3s ease-in-out infinite;
+        }
+
+        .share-button:hover {
+            transform: scale(1.15);
+            box-shadow: 0 10px 25px rgba(255, 69, 0, 0.8);
+            background: linear-gradient(45deg, #ffd700, #ff1493, #ff4500);
+        }
+
+        .petal {
+            position: absolute;
+            width: 14px;
+            height: 14px;
+            border-radius: 50% 50% 0 50%;
+            pointer-events: none;
+            animation: petalFall 3.5s ease-out forwards;
+            z-index: 5;
+        }
+
+        .cat {
+            position: absolute;
+            background: no-repeat center/cover;
+            border-radius: 50%;
+            opacity: 0;
+            animation: catBounce 3s ease-in-out forwards;
+            pointer-events: auto;
+            z-index: 5;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4), 0 0 15px rgba(255, 215, 0, 0.4);
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .cat:hover {
+            transform: scale(1.1) rotate(5deg);
+        }
+
+        .heart, .mini-star {
+            position: absolute;
+            pointer-events: none;
+            animation: heartRise 1.8s ease-out forwards;
+            z-index: 6;
+        }
+
+        .heart {
+            width: 16px;
+            height: 16px;
+            background: #ff1493;
+            transform: rotate(45deg);
+        }
+
+        .heart::before,
+        .heart::after {
+            content: '';
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            background: #ff1493;
+            border-radius: 50%;
+        }
+
+        .heart::before {
+            top: -8px;
+            left: 0;
+        }
+
+        .heart::after {
+            left: -8px;
+            top: 0;
+        }
+
+        .mini-star {
+            width: 10px;
+            height: 10px;
+            background: #ffd700;
+            clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+        }
+
+        .firework {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            pointer-events: none;
+            animation: fireworkBurst 2.2s ease-out forwards;
+            z-index: 2;
+            filter: blur(1px);
+        }
+
+        .firework.star {
+            background: none;
+            border: 2px solid;
+            border-radius: 0;
+            transform: rotate(45deg);
+            animation: fireworkBurst 2.2s ease-out forwards, starSpin 1.2s linear;
+        }
+
+        .firework.heart {
+            background: none;
+            width: 12px;
+            height: 12px;
+            clip-path: polygon(50% 20%, 70% 10%, 90% 20%, 100% 40%, 90% 60%, 70% 70%, 50% 80%, 30% 70%, 10% 60%, 0% 40%, 10% 20%, 30% 10%);
+            animation: fireworkBurst 2.2s ease-out forwards;
+        }
+
+        @keyframes containerDissolve {
+            from {
+                opacity: 0;
+                transform: scale(0.8) rotate(-3deg);
+                filter: blur(10px);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) rotate(0);
+                filter: blur(0);
+            }
+        }
+
+        @keyframes containerPulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.02);
+            }
+        }
+
+        @keyframes titleSparkle {
+            0%, 100% {
+                filter: drop-shadow(0 0 12px #ffd700) brightness(1.2);
+                text-shadow: 0 0 15px #ffd700;
+            }
+            50% {
+                filter: drop-shadow(0 0 25px #ffd700) brightness(1.5);
+                text-shadow: 0 0 30px #ffd700;
+            }
+        }
+
+        @keyframes petalFall {
+            0% {
+                opacity: 1;
+                transform: translate(0, 0) rotate(0);
+            }
+            100% {
+                opacity: 0;
+                transform: translate(var(--x), 120px) rotate(1080deg);
+            }
+        }
+
+        @keyframes catBounce {
+            0% {
+                opacity: 0;
+                transform: scale(0.5) rotate(-10deg) translateY(20px);
+            }
+            20% {
+                opacity: 0.95;
+                transform: scale(1.1) rotate(5deg) translateY(-10px);
+            }
+            50% {
+                transform: scale(1) rotate(-3deg) translateY(5px);
+            }
+            80% {
+                opacity: 0.95;
+                transform: scale(1) rotate(3deg) translateY(-5px);
+            }
+            100% {
+                opacity: 0;
+                transform: scale(0.5) rotate(10deg) translateY(20px);
+            }
+        }
+
+        @keyframes heartRise {
+            0% {
+                opacity: 1;
+                transform: translate(0, 0) scale(1);
+            }
+            100% {
+                opacity: 0;
+                transform: translate(var(--x), -60px) scale(0.4);
+            }
+        }
+
+        @keyframes fireworkBurst {
+            0% {
+                opacity: 1;
+                transform: scale(1);
+                filter: blur(1px) brightness(1);
+            }
+            100% {
+                opacity: 0;
+                transform: scale(0) translate(var(--x), var(--y));
+                filter: blur(2px) brightness(0.5);
+            }
+        }
+
+        @keyframes starSpin {
+            0% {
+                transform: rotate(45deg);
+            }
+            100% {
+                transform: rotate(405deg);
+            }
+        }
+
+        @keyframes buttonWave {
+            0%, 100% {
+                box-shadow: 0 6px 20px rgba(255, 69, 0, 0.6);
+                transform: scale(1);
+            }
+            50% {
+                box-shadow: 0 10px 30px rgba(255, 69, 0, 0.9);
+                transform: scale(1.05);
+            }
+        }
+
+        @keyframes twinkle {
+            0%, 100% {
+                opacity: 0.8;
+            }
+            50% {
+                opacity: 0.3;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 30px;
+                margin: 10px;
+            }
+
+            h1 {
+                font-size: 2.8rem;
+            }
+
+            p {
+                font-size: 1.3rem;
+            }
+
+            .share-button {
+                padding: 12px 25px;
+                font-size: 0.95rem;
+            }
+
+            .cat {
+                width: 50px;
+                height: 50px;
+            }
+
+            .firework {
+                width: 7px;
+                height: 7px;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .cat, .firework, .petal, .heart, .mini-star, .star {
+                animation: none;
+            }
+            .container, h1, .share-button {
+                animation: none;
+                transform: none;
+                filter: none;
+            }
+        }
+
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Great+Vibes&display=swap');
+    </style>
+</head>
+<body>
+    <div class="stars" id="stars"></div>
+    <div class="container" role="main" aria-labelledby="greeting-title">
+        <h1 id="greeting-title">Мика, поздравляю тебя с днем победы!</h1>
+        <p>
+            Поздравляю тебя с этим великим праздником! Пусть в твоей жизни всегда будет мир, счастье и любовь.
+            Ты — настоящая звезда, которая освещает всё вокруг. Спасибо за твою доброту и тепло!
+        </p>
+        <div class="flower">
+            <img src="https://images.unsplash.com/photo-1582156503109-c8b3aa6e2909" alt="Букет ярких цветов в честь Дня Победы" id="flower-img" aria-label="Букет цветов">
+        </div>
+        <p>
+            Пусть этот день принесёт тебе радость и вдохновение. С праздником, милая!
+        </p>
+        <a href="javascript:void(0)" class="share-button" id="share-button" role="button" aria-label="Поделиться поздравлением">Поделиться поздравлением</a>
+    </div>
+
+    <script>
+        // Массив с разными изображениями котов
+        const catImages = [
+            'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba',
+            'https://images.unsplash.com/photo-1495360010541-f3bf96915d83',
+            'https://images.unsplash.com/photo-1573865526739-10659fec78a5',
+            'https://images.unsplash.com/photo-1519052537078-e6302a4968d4',
+            'https://images.unsplash.com/photo-1494256997604-768d1f608cac',
+            'https://images.unsplash.com/photo-1529778873920-4da4926a72c2',
+            'https://images.unsplash.com/photo-1518791841217-8f162f1e1131',
+            'https://images.unsplash.com/photo-1543852786-1cf6624b9987',
+            'https://images.unsplash.com/photo-1501820488136-726691fb6059',
+            'https://images.unsplash.com/photo-1478098711619-5ab0b478d6e6'
+        ];
+
+        // Создание звезд на фоне
+        const starsContainer = document.getElementById('stars');
+        for (let i = 0; i < 150; i++) {
+            const star = document.createElement('div');
+            star.className = 'star';
+            star.style.left = `${Math.random() * 100}%`;
+            star.style.top = `${Math.random() * 100}%`;
+            star.style.animationDelay = `${Math.random() * 4}s`;
+            starsContainer.appendChild(star);
+        }
+
+        // Эффект лепестков при клике на изображение
+        const flowerImg = document.getElementById('flower-img');
+        const petalColors = ['#ff69b4', '#ffd700', '#ffffff'];
+        flowerImg.addEventListener('click', (e) => {
+            const rect = flowerImg.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            for (let i = 0; i < 15; i++) {
+                const petal = document.createElement('div');
+                petal.className = 'petal';
+                petal.style.left = `${x + rect.left + Math.random() * 30 - 15}px`;
+                petal.style.top = `${y + rect.top + Math.random() * 30 - 15}px`;
+                petal.style.background = petalColors[Math.floor(Math.random() * petalColors.length)];
+                petal.style.setProperty('--x', `${(Math.random() - 0.5) * 120}px`);
+                document.body.appendChild(petal);
+
+                petal.addEventListener('animationend', () => {
+                    petal.remove();
+                });
+            }
+        });
+
+        // Функция шаринга с эффектом искр
+        const shareButton = document.getElementById('share-button');
+        shareButton.addEventListener('click', async (e) => {
+            const rect = shareButton.getBoundingClientRect();
+            const x = e.clientX;
+            const y = e.clientY;
+
+            for (let i = 0; i < 10; i++) {
+                const spark = document.createElement('div');
+                spark.className = 'mini-star';
+                spark.style.left = `${x + Math.random() * 20 - 10}px`;
+                spark.style.top = `${y + Math.random() * 20 - 10}px`;
+                spark.style.setProperty('--x', `${(Math.random() - 0.5) * 40}px`);
+                document.body.appendChild(spark);
+
+                spark.addEventListener('animationend', () => {
+                    spark.remove();
+                });
+            }
+
+            const shareData = {
+                title: 'С Днём Победы!',
+                text: 'Поздравляю с Днём Победы! Пусть в твоей жизни всегда будет мир, счастье и любовь!',
+                url: window.location.href
+            };
+
+            if (navigator.share) {
+                try {
+                    await navigator.share(shareData);
+                } catch (err) {
+                    console.error('Ошибка шаринга:', err);
+                }
+            } else if (navigator.clipboard) {
+                try {
+                    await navigator.clipboard.writeText(shareData.url);
+                    alert('Ссылка скопирована в буфер обмена! Поделитесь ею в соцсетях или мессенджерах.');
+                } catch (err) {
+                    console.error('Ошибка копирования:', err);
+                    alert('Поделитесь этим поздравлением через соцсети или мессенджеры!');
+                }
+            } else {
+                alert('Поделитесь этим поздравлением через соцсети или мессенджеры!');
+            }
+        });
+
+        // Анимация котов
+        let catCount = 0;
+        const maxCats = 12;
+
+        function createCat() {
+            if (catCount >= maxCats) return;
+
+            const cat = document.createElement('div');
+            cat.className = 'cat';
+            catCount++;
+
+            // Случайный выбор изображения кота
+            const randomCat = catImages[Math.floor(Math.random() * catImages.length)];
+            cat.style.backgroundImage = `url(${randomCat})`;
+
+            // Случайный размер (70-130px на десктопе, 50-90px на мобильных)
+            const isMobile = window.innerWidth <= 600;
+            const size = isMobile ? 50 + Math.random() * 40 : 70 + Math.random() * 60;
+            cat.style.width = `${size}px`;
+            cat.style.height = `${size}px`;
+
+            // Ограничение области появления
+            const container = document.querySelector('.container');
+            const containerRect = container.getBoundingClientRect();
+            let x, y;
+            do {
+                x = Math.random() * (window.innerWidth - size);
+                y = Math.random() * (window.innerHeight - size);
+            } while (
+                x > containerRect.left - size &&
+                x < containerRect.right &&
+                y > containerRect.top - size &&
+                y < containerRect.bottom
+            );
+
+            cat.style.left = `${x}px`;
+            cat.style.top = `${y}px`;
+
+            // Случайная длительность анимации (2-3 секунды)
+            const duration = 2000 + Math.random() * 1000;
+            cat.style.animationDuration = `${duration}ms`;
+
+            // Эффект сердечек и звезд при клике на кота
+            cat.addEventListener('click', () => {
+                for (let i = 0; i < 4; i++) {
+                    const isHeart = Math.random() > 0.5;
+                    const element = document.createElement('div');
+                    element.className = isHeart ? 'heart' : 'mini-star';
+                    element.style.left = `${x + size / 2}px`;
+                    element.style.top = `${y + size / 2}px`;
+                    element.style.setProperty('--x', `${(Math.random() - 0.5) * 30}px`);
+                    document.body.appendChild(element);
+
+                    element.addEventListener('animationend', () => {
+                        element.remove();
+                    });
+                }
+            });
+
+            document.body.appendChild(cat);
+
+            // Удаление кота после анимации
+            cat.addEventListener('animationend', () => {
+                cat.remove();
+                catCount--;
+            });
+        }
+
+        // Создание котов каждые 1.2 секунды
+        setInterval(createCat, 1200);
+
+        // Создать первого кота сразу
+        createCat();
+
+        // Анимация салютов
+        const colors = ['#ff4500', '#ffd700', '#00ff00', '#00b7eb', '#ff69b4', '#800080', '#4169e1', '#ff1493', '#ffffff', '#ffa500'];
+
+        function createFirework(x = Math.random() * window.innerWidth, y = Math.random() * window.innerHeight) {
+            const shapes = ['circle', 'star', 'heart'];
+            for (let i = 0; i < 40; i++) {
+                const firework = document.createElement('div');
+                const shape = shapes[Math.floor(Math.random() * shapes.length)];
+                firework.className = `firework ${shape === 'circle' ? '' : shape}`;
+                firework.style.left = `${x}px`;
+                firework.style.top = `${y}px`;
+                firework.style.background = colors[Math.floor(Math.random() * colors.length)];
+                if (shape !== 'circle') {
+                    firework.style.borderColor = firework.style.background;
+                    firework.style.background = 'none';
+                }
+
+                // Случайное направление и расстояние
+                const angle = (i / 40) * 360 + Math.random() * 8;
+                const distance = 100 + Math.random() * 150;
+                firework.style.setProperty('--x', `${Math.cos(angle * Math.PI / 180) * distance}px`);
+                firework.style.setProperty('--y', `${Math.sin(angle * Math.PI / 180) * distance}px`);
+                firework.style.opacity = 0.7 + Math.random() * 0.3;
+
+                document.body.appendChild(firework);
+
+                firework.addEventListener('animationend', () => {
+                    firework.remove();
+                });
+            }
+        }
+
+        // Запуск салютов каждые 2.5 секунды
+        setInterval(createFirework, 2500);
+
+        // Создать первый салют сразу
+        createFirework();
+
+        // Дополнительные салюты при клике на фон
+        let lastClick = 0;
+        document.body.addEventListener('click', (e) => {
+            if (e.target === document.body || e.target.classList.contains('stars')) {
+                const now = Date.now();
+                if (now - lastClick > 500) {
+                    createFirework(e.clientX, e.clientY);
+                    lastClick = now;
+                }
+            }
+        });
+    </script>
+</body>
+</html>
